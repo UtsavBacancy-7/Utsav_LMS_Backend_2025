@@ -3,7 +3,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
-using LMS_Backend.LMS.Common.Exceptions;
 
 namespace LMS_Backend.LMS.API.Controllers
 {
@@ -30,72 +29,27 @@ namespace LMS_Backend.LMS.API.Controllers
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> GetNotifications()
         {
-            try
-            {
-                var loggedInUser = GetLoggedInUserId();
-                var notifications = await _wishlistAndNotificationService.GetUserNotificationsAsync(loggedInUser);
-                return Ok(new { success = true, message = "Notification fetched successfully.", data = notifications });
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = $"Error fetching notification: {ex.Message}" });
-            }
+            var loggedInUser = GetLoggedInUserId();
+            var notifications = await _wishlistAndNotificationService.GetUserNotificationsAsync(loggedInUser);
+            return Ok(new { success = true, message = "Notifications fetched successfully", data = notifications });
         }
 
         [HttpPost("read")]
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> ReadNotification([FromQuery] int notificationId)
         {
-            try
-            {
-                var loggedInUser = GetLoggedInUserId();
-                await _wishlistAndNotificationService.MarkNotificationAsReadAsync(notificationId);
-                return Ok(new { success = true, message = "Notification is mark as read." });
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = $"Error fetching notification: {ex.Message}" });
-            }
+            var loggedInUser = GetLoggedInUserId();
+            await _wishlistAndNotificationService.MarkNotificationAsReadAsync(notificationId);
+            return Ok(new { success = true, message = "Notification marked as read" });
         }
 
         [HttpGet("unread")]
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> UnReadNotification()
         {
-            try
-            {
-                var loggedInUser = GetLoggedInUserId();
-                var notificatios = await _wishlistAndNotificationService.GetUnreadNotificationCountAsync(loggedInUser);
-                return Ok(new { success = true, message = "Unread Notification fetch Successfully.", data = notificatios });
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, message = $"Error fetching notification: {ex.Message}" });
-            }
+            var loggedInUser = GetLoggedInUserId();
+            var notifications = await _wishlistAndNotificationService.GetUnreadNotificationCountAsync(loggedInUser);
+            return Ok(new { success = true, message = "Unread notifications count fetched", data = notifications });
         }
     }
 }

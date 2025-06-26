@@ -73,16 +73,45 @@ builder.Services.AddApiVersioning(options =>
     options.SubstituteApiVersionInUrl = true;
 });
 
-// CORs Policy
+// Fetch Data from appsettings.json for CORS
+var corsSettings = builder.Configuration.GetSection("Cors");
+
+// CORS Policies
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("RestrictedCors", builder =>
+    options.AddPolicy("RestrictedCors", policy =>
     {
-        builder
-            .WithOrigins("http://localhost:4200")
-            .WithMethods("GET", "POST", "PUT", "DELETE", "PATCH")
-            .WithHeaders("Content-Type", "Authorization")
-            .AllowCredentials();
+        // Get arrays from configuration
+        var origins = corsSettings.GetSection("AllowedOrigins").Get<string[]>();
+        var methods = corsSettings.GetSection("AllowedMethods").Get<string[]>();
+        var headers = corsSettings.GetSection("AllowedHeaders").Get<string[]>();
+        var exposedHeaders = corsSettings.GetSection("ExposedHeaders").Get<string[]>();
+
+        // Apply CORS policy
+        if (origins != null && origins.Length > 0)
+        {
+            policy.WithOrigins(origins);
+        }
+
+        if (methods != null && methods.Length > 0)
+        {
+            policy.WithMethods(methods);
+        }
+
+        if (headers != null && headers.Length > 0)
+        {
+            policy.WithHeaders(headers);
+        }
+
+        if (corsSettings["AllowCredentials"]?.ToLower() == "true")
+        {
+            policy.AllowCredentials();
+        }
+
+        if (exposedHeaders != null && exposedHeaders.Length > 0)
+        {
+            policy.WithExposedHeaders(exposedHeaders);
+        }
     });
 });
 
@@ -138,6 +167,8 @@ app.UseCors("RestrictedCors");
 app.UseMiddleware<LogMiddleware>();
 
 app.UseMiddleware<RateLimitMiddleware>();
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 

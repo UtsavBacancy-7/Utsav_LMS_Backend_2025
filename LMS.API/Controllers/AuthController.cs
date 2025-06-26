@@ -25,40 +25,17 @@ namespace LMS_Backend.LMS.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
                 var message = await _authRepository.RegisterAsync(register);
                 return Ok(new { success = true, Message = message });
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, Message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, Message = $"An unexpected error occurred. : {ex.Message}" });
-            }
+          
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<LoginResponseDTO>> Login(LoginDTO userLoginDTO)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            try
-            {
+           
                 var loginResponse = await _authRepository.LoginAsync(userLoginDTO);
                 return Ok(new { success = true, message = "Login Successfully", data = loginResponse });
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, Message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, Message = $"An unexpected error occurred. : {ex.Message}" });
-            }
         }
 
         [HttpPost("send-otp")]
@@ -66,19 +43,9 @@ namespace LMS_Backend.LMS.API.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            try
-            {
+            
                 var message = await _authRepository.SendOtpToEmail(dto);
                 return Ok(new { success = true, message = "OTP sent to email." });
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, Message = $"An unexpected error occurred. : {ex.Message}" });
-            }
         }
 
         [HttpPost("ResetPassword")]
@@ -87,19 +54,8 @@ namespace LMS_Backend.LMS.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
                 var result = await _authRepository.ResetPassword(resetPwdDTO);
                 return Ok(new { success = true, Message = result });
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, Message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { success = false, Message = $"An unexpected error occurred. : {ex.Message}" });
-            }
         }
     }
 }

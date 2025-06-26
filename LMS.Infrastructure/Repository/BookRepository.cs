@@ -55,6 +55,13 @@ namespace LMS_Backend.LMS.Infrastructure.Repository
             return _mapper.Map<IEnumerable<GetBookDTO>>(books);
         }
 
+        public async Task<int> GetTotalBookCountQuery()
+        {
+            var count = await _context.Books.Where(s => !s.IsDeleted).CountAsync();
+
+            return count;
+        }
+
         public async Task<GetBookDTO> GetBookByIdQuery(int id)
         {
             var book = await _context.Books

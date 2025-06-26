@@ -7,6 +7,7 @@ namespace LMS_Backend.LMS.Application.Interfaces.BooksManagement
     {
         public Task<GetBookDTO> GetBookByIdAsync(int id);
         public Task<IEnumerable<GetBookDTO>> GetAllBooksAsync();
+        public Task<int> GetTotalBookCountAsync();
         public Task<bool> AddBookAsync(BookDTO book, int createdBy);
         public Task<bool> PatchBookAsync(int id, JsonPatchDocument<BookDTO> patchDoc, int updatedBy);
         public Task<bool> UpdateBookAsync(int id, BookDTO bookDto, int updatedBy);

@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authorization;
 using LMS_Backend.LMS.Application.DTOs.BookTransaction;
 using Microsoft.AspNetCore.JsonPatch;
 using LMS_Backend.LMS.Domain.Entities;
-using LMS_Backend.LMS.Common.Exceptions;
 
 namespace LMS_Backend.LMS.API.Controllers
 {
@@ -37,198 +36,74 @@ namespace LMS_Backend.LMS.API.Controllers
         [Authorize(Roles = "Administrator, Librarian")]
         public async Task<IActionResult> GetAllBorrowRequests()
         {
-            try
-            {
-                var requests = await _borrowService.GetAllBorrowRequestsAsync();
-                return Ok(requests);
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving borrow requests: " + ex.Message);
-            }
+            var requests = await _borrowService.GetAllBorrowRequestsAsync();
+            return Ok(requests);
         }
 
         [HttpGet("borrow-requests-by-userId")]
         [Authorize(Roles = "Student")]
-        public async Task<IActionResult> GetBorrowRequestByUserId([FromQuery]int id)
+        public async Task<IActionResult> GetBorrowRequestByUserId([FromQuery] int id)
         {
-            try
-            {
-                var loggedInUser = GetLoggedInUserId();
-                var request = await _borrowService.GetBorrowRequestByUserIdAsync(loggedInUser);
-                return Ok(request);
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving borrow request: " + ex.Message);
-            }
+            var loggedInUser = GetLoggedInUserId();
+            var request = await _borrowService.GetBorrowRequestByUserIdAsync(loggedInUser);
+            return Ok(request);
         }
 
         [HttpGet("borrow-requests-by-id")]
         [Authorize(Roles = "Administrator, Librarian, Student")]
         public async Task<IActionResult> GetBorrowRequestById([FromQuery] int id)
         {
-            try
-            {
-                var request = await _borrowService.GetBorrowRequestByIdAsync(id);
-                return Ok(request);
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving borrow request: "+ ex.Message);
-            }
+            var request = await _borrowService.GetBorrowRequestByIdAsync(id);
+            return Ok(request);
         }
 
         [HttpPost("borrow-requests")]
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> CreateBorrowRequest([FromBody] BorrowRequestCreateDTO request)
         {
-            try
-            {
-                var createdBy = GetLoggedInUserId();
-                var success = await _borrowService.AddBorrowRequestAsync(request, createdBy);
-
-                return success ? NoContent() : NotFound($"Borrow request is not created.");
-            }
-            catch (AlreadyExistsException<string> ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex);
-            }
+            var createdBy = GetLoggedInUserId();
+            await _borrowService.AddBorrowRequestAsync(request, createdBy);
+            return NoContent();
         }
 
         [HttpPatch("borrow-requests")]
         [Authorize(Roles = "Administrator, Librarian")]
         public async Task<IActionResult> UpdateBorrowRequest([FromQuery] int id, [FromBody] JsonPatchDocument<BorrowRequestUpdateStatusDTO> patchDoc)
         {
-            try
+            if (patchDoc == null)
             {
-                if (patchDoc == null)
-                {
-                    return BadRequest("Patch document is required");
-                }
+                return BadRequest("Patch document is required");
+            }
 
-                var updatedBy = GetLoggedInUserId();
-                var success = await _borrowService.PatchBorrowRequestAsync(id, patchDoc, updatedBy);
-
-                return success ? NoContent() : NotFound($"Borrow request with ID {id} not found");
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            var updatedBy = GetLoggedInUserId();
+            await _borrowService.PatchBorrowRequestAsync(id, patchDoc, updatedBy);
+            return NoContent();
         }
 
         [HttpDelete("borrow-requests")]
         [Authorize(Roles = "Administrator")]
-        public async Task<IActionResult> DeleteBorrowRequest([FromQuery]int id)
+        public async Task<IActionResult> DeleteBorrowRequest([FromQuery] int id)
         {
-            try
-            {
-                var deletedBy = GetLoggedInUserId();
-                var success = await _borrowService.DeleteBorrowRequestAsync(id, deletedBy);
-
-                return success ? NoContent() : NotFound($"Borrow request with ID {id} not found");
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            { 
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error deleting borrow request: "+ ex.Message);
-            }
+            var deletedBy = GetLoggedInUserId();
+            await _borrowService.DeleteBorrowRequestAsync(id, deletedBy);
+            return NoContent();
         }
-
 
         [HttpGet("get-all")]
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> GetAllTransaction()
         {
-            try
-            {
-                var transaction = await _transactionHistoryService.GetAllTransactionAsync();
-                return transaction != null ? Ok(transaction) : NotFound("No Transaction found");
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving borrow request: "+ex.Message);
-            }
+            var transaction = await _transactionHistoryService.GetAllTransactionAsync();
+            return Ok(transaction);
         }
 
         [HttpGet("get-by-userId")]
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> GetTransactionByUserId()
         {
-            try
-            {
-                var loggedInUser = GetLoggedInUserId();
-                var transaction = await _transactionHistoryService.GetAllTransactionByUserIdAsync(loggedInUser);
-                return transaction != null ? Ok(transaction) : NotFound($"No Transaction found with {loggedInUser} id.");
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving borrow request: "+ex.Message);
-            }
+            var loggedInUser = GetLoggedInUserId();
+            var transaction = await _transactionHistoryService.GetAllTransactionByUserIdAsync(loggedInUser);
+            return Ok(transaction);
         }
     }
 }

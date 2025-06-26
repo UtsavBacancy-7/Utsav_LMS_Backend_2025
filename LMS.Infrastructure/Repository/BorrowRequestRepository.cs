@@ -94,7 +94,9 @@ namespace LMS_Backend.LMS.Infrastructure.Repository
                 ApprovedDate = s.ApprovedDate,
                 DueDate = s.DueDate,
                 ReturnDate = s.ReturnDate
-            }).ToListAsync();
+            })
+                .OrderByDescending(s => s.RequestDate)
+                .ToListAsync();
 
             if (requestList == null)
                 throw new DataNotFoundException<string>($"No data found.");

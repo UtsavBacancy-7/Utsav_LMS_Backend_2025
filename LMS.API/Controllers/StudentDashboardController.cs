@@ -1,12 +1,8 @@
 ﻿using System.Security.Claims;
 using Asp.Versioning;
-using LMS_Backend.LMS.Application.Interfaces.UserManagement;
 using LMS_Backend.LMS.Application.Interfaces;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using LMS_Backend.LMS.Application.Services;
 using Microsoft.AspNetCore.Authorization;
-using LMS_Backend.LMS.Common.Exceptions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LMS_Backend.LMS.API.Controllers
 {
@@ -33,24 +29,9 @@ namespace LMS_Backend.LMS.API.Controllers
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> DashboardStats()
         {
-            try
-            {
-                var loggedInUser = GetLoggedInUserId();
-                var statsData = await _studentDashboardStatService.GetAllStats(loggedInUser);
-                return Ok(new { success = true, message = "Data fetched successfully", data = statsData });
-            }
-            catch (DataNotFoundException<string> ex)
-            {
-                return NotFound(new { success = false, message = ex.Message });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "An error occurred while fetching user profile", error = ex.Message });
-            }
+            var loggedInUser = GetLoggedInUserId();
+            var statsData = await _studentDashboardStatService.GetAllStats(loggedInUser);
+            return Ok(new { success = true, message = "Data fetched successfully", data = statsData });
         }
     }
 }

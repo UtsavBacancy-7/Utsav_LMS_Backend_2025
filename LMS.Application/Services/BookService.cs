@@ -33,6 +33,11 @@ namespace LMS_Backend.LMS.Application.Services
             return await _bookRepository.GetBookByIdQuery(id);
         }
 
+        public async Task<int> GetTotalBookCountAsync()
+        {
+            return await _bookRepository.GetTotalBookCountQuery();
+        }
+
         public async Task<bool> PatchBookAsync(int id, JsonPatchDocument<BookDTO> patchDoc, int updatedBy)
         {
             return await _bookRepository.PatchBookQuery(id, patchDoc, updatedBy);

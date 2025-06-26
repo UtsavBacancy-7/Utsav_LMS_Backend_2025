@@ -28,7 +28,7 @@ namespace LMS_Backend.LMS.Infrastructure.Repository
             // Check if pending return request already exists
             var existingRequest = await _context.ReturnRequests
                 .AnyAsync(r => r.BorrowRequestId == request.BorrowRequestId
-                             && r.Status == Domain.Enums.RequestStatus.Pending
+                             && (r.Status == Domain.Enums.RequestStatus.Pending)
                              && !r.IsDeleted);
 
             if (existingRequest)
@@ -110,6 +110,7 @@ namespace LMS_Backend.LMS.Infrastructure.Repository
                     ApprovedDate = s.ApprovedDate,
                     DueDate = s.BorrowRequest.DueDate,
                 })
+                .OrderByDescending(s => s.RequestDate)
                 .ToListAsync();
 
             if (requestList == null)
